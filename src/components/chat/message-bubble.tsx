@@ -91,7 +91,8 @@ export function MessageBubble({
             )}
           >
             <span>
-              {format(new Date(message.createdAt), 'HH:mm')}
+              {format(new Date(message.createdAt), 'HH:mm')} // utc time u should convert to ist 
+              
             </span>
             {isOwnMessage && <CheckCheck className="h-3 w-3 text-blue-100" />}
           </div>
