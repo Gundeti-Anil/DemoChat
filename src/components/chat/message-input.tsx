@@ -93,14 +93,15 @@ export function MessageInput({
             placeholder={placeholder}
             disabled={disabled}
             className={cn(
-              "min-h-[40px] max-h-[120px] resize-none pr-12 py-2",
-              "focus-visible:ring-1 focus-visible:ring-blue-500"
+              "min-h-[40px] max-h-[120px] resize-none pr-12 py-2", // h-10 w-20 no arbitries
+              "focus-visible:ring-1 focus-visible:ring-blue-500" //should be in text area componr 
             )}
             rows={1}
           />
 
           {/* Send button */}
           <Button
+            // use variants
             onClick={handleSend}
             disabled={!message.trim() || disabled}
             size="sm"
@@ -114,7 +115,7 @@ export function MessageInput({
         </div>
 
         {/* Hidden file input */}
-        <input
+        <Input
           ref={fileInputRef}
           type="file"
           className="hidden"
