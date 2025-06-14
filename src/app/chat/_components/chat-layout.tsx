@@ -9,23 +9,14 @@ import { User } from '@/lib/types';
 import { useRouter } from 'next/navigation';
 import axios from 'axios';
 
-// const queryClient = new QueryClient({
-//   defaultOptions: {
-//     queries: {
-//       refetchOnWindowFocus: false,
-//       refetchOnMount: false,
-//       refetchInterval: false,
-//       retry: 1,
-//     },
-//   },
-// });
-
 const queryClient = new QueryClient()
+
 function ChatContent({ currentUser, users }: { currentUser: User, users: User[] }) {
 
 
   const [selectedUser, setSelectedUser] = useState<User | null>(null);
   const [conversationId, setConversationId] = useState<string>("");
+
   const router = useRouter();
   const { mutate: createOrGetConversation, isPending } = useMutation({
     mutationFn: async (userId: string) => {
@@ -39,25 +30,20 @@ function ChatContent({ currentUser, users }: { currentUser: User, users: User[] 
         throw new Error('Failed to create/fetch conversation');
       }
       const data = response.data;
-
-
       return data;
     },
     onSuccess: (data) => {
       if (data?.id) {
-        setConversationId(data.id.toString());
-        router.push(`/chat?conversationId=${data.id.toString()}`);
+        setConversationId(data.id);
+        router.push(`/chat?conversationId=${data.id}`);
       }
     },
     onError: (error) => {
-      console.error('Error creating/fetching conversation:', error);
+      // console.error('Error creating/fetching conversation:', error);
+      throw new Error('Error creating/fetching conversation:', error);
     },
   });
 
-
-  if (isPending) {
-    return <div>Loading...</div>
-  }
   return (
     <div className="h-screen flex bg-gray-50">
       <Sidebar
@@ -65,12 +51,12 @@ function ChatContent({ currentUser, users }: { currentUser: User, users: User[] 
           setSelectedUser(user);
           createOrGetConversation(user.id.toString());
         }}
-        users={users}
+      // users={users}
       />
       <ChatWindow
         selectedUser={selectedUser}
         currentUser={currentUser}
-        conversationId={conversationId}
+      // conversationId={conversationId}
       />
       <Toaster />
     </div>

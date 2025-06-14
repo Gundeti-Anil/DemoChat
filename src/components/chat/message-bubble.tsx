@@ -23,7 +23,7 @@ export function MessageBubble({
   return (
     <div
       className={cn(
-        "flex gap-3 max-w-[70%]",
+        "flex gap-3 max-w-md",
         isOwnMessage ? "ml-auto flex-row-reverse" : "mr-auto",
       )}
     >

@@ -1,7 +1,7 @@
 import { db } from "@/lib/db";
 
 import getSession from "../../actions/getSession";
-import getCurrentUser from "../../actions/getCurrentUser";
+import { getCurrentUser } from "../../actions/get-current-user";
 
 export const getUsers = async () => {
   const session = await getSession();
@@ -32,13 +32,13 @@ export const getUsers = async () => {
     });
 
     if (!sameInterestUsers) {
-      return [];
+      return null;
     }
 
     return sameInterestUsers;
   } catch (error) {
-    console.log(error);
-    return [];
+    // console.log(error);
+    return null;
   }
 };
 

@@ -1,5 +1,5 @@
 import { ChatLayout } from "./_components/chat-layout"
-import getCurrentUser from "@/app/actions/getCurrentUser"
+import { getCurrentUser } from "@/app/actions/get-current-user"
 import { redirect } from "next/navigation";
 import { getUsers } from "./actions/get-users";
 // 
@@ -7,6 +7,7 @@ export default async function ChatPage() {
   try {
     const users = await getUsers();
     const currentUser = await getCurrentUser();
+
     if (!currentUser) {
       redirect('/auth/signin'); // or any other route
     }
@@ -17,7 +18,7 @@ export default async function ChatPage() {
       </div>
     );
   } catch (error) {
-    console.error("Error in ChatPage:", error);
+    // console.error("Error in ChatPage:", error);
     return <div>Error loading chat</div>;
   }
 }

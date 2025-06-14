@@ -1,5 +1,5 @@
 import { db } from "@/lib/db";
-import getCurrentUser from "../../actions/getCurrentUser";
+import { getCurrentUser } from "../../actions/get-current-user";
 
 export const getConversations = async () => {
   const currentUser = await getCurrentUser();

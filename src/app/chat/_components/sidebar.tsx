@@ -1,46 +1,57 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { useQuery } from '@tanstack/react-query';
+// import { useQuery } from '@tanstack/react-query';
 import { Search } from 'lucide-react';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Input } from '@/components/ui/input';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { User } from '@/lib/types';
-import axios from 'axios';
+// import axios from 'axios';
 import { pusher } from '@/lib/pusher';
-
-interface SidebarProps {
-  users: User[];
-  onUserSelect: (user: User) => void;
-}
-
-
+import { toast } from "sonner"
+import { useServerAction } from "zsa-react"
+import { getUsers } from "@/app/chat/actions/get-users-action"
+import { SidebarProps } from '@/types/chat';
+import { UserScroll } from './user-scroll';
 
 
-export function Sidebar({ users, onUserSelect }: SidebarProps) {
-  console.log(users);
+export function Sidebar({ onUserSelect }: SidebarProps) {
+  // console.log(users);
   const [searchQuery, setSearchQuery] = useState('');
   const [onlineUsers, setOnlineUsers] = useState<Set<string>>(new Set());
+  const [users, setUsers] = useState<User[]>([]);
 
-  const { data: user = [], isLoading, error } = useQuery({
-    queryKey: ['users'],
-    queryFn: async () => {
-      const response = await axios.get('/api/chat/users');
-      return response.data.map((user: any) => ({
-        ...user,
-        isOnline: false,
-        avatar: user.image || ''
-      }));
+  // const { data: user = [], isLoading, error } = useQuery({
+  //   queryKey: ['users'],
+  //   queryFn: async () => {
+  //     const response = await axios.get('/api/chat/users');
+  //     return response.data.map((user: User) => ({
+  //       ...user,
+  //       isOnline: false,
+  //       // avatar: user.image || ''
+  //     }));
+  //   },
+  //   staleTime: 5 * 60 * 1000,
+  // });
+
+  const {
+    execute: fetchUsers,
+    isPending: isLoading,
+    error: messagesError
+  } = useServerAction(getUsers, {
+    onSuccess: (data) => {
+      if (!data) return;
+      setUsers(data.data as User[])
     },
-    staleTime: 5 * 60 * 1000,
-  });
+    onError: () => {
+      toast(messagesError?.message)
+    }
+  })
 
-  // const usersWithStatus = users.map((user: User) => ({
-  //   ...user,
-  //   isOnline: onlineUsers.has(user.id.toString())
-  // }));
-
+  useEffect(() => {
+    fetchUsers({})
+  }, [])
 
 
   useEffect(() => {
@@ -83,12 +94,13 @@ export function Sidebar({ users, onUserSelect }: SidebarProps) {
     ...user,
     isOnline: onlineUsers.has(user.id.toString())
   }));
+
   const filteredUsers = usersWithStatus.filter((user: User) =>
     user.name.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
 
-  if (!users) {
+  if (isLoading) {
     return (
       <div className="w-80 bg-white border-r border-gray-200 flex flex-col h-full">
         <div className="p-4 border-b border-gray-200">
@@ -109,7 +121,7 @@ export function Sidebar({ users, onUserSelect }: SidebarProps) {
     );
   }
 
-  if (error) {
+  if (messagesError) {
     return (
       <div className="w-80 bg-white border-r border-gray-200 flex flex-col h-full items-center justify-center p-4 text-center">
         <p className="text-red-500">Failed to load users. Please try again later.</p>
@@ -138,41 +150,7 @@ export function Sidebar({ users, onUserSelect }: SidebarProps) {
       </div>
 
       {/* Users List */}
-      <ScrollArea className="flex-1">
-        <div className="p-2">
-          {filteredUsers.length > 0 ? (
-            filteredUsers.map((user: User) => (
-              <button
-                key={user.id}
-                onClick={() => onUserSelect(user)}
-                className="w-full flex items-center gap-3 p-3 rounded-lg hover:bg-gray-50 transition-colors"
-              >
-                <div className="relative">
-                  <Avatar className="h-10 w-10">
-                    <AvatarImage src={user.avatar} alt={user.name} />
-                    <AvatarFallback>
-                      {user.name.split(' ').map(n => n[0]).join('')}
-                    </AvatarFallback>
-                  </Avatar>
-                  {user.isOnline && (
-                    <div className="absolute -bottom-0.5 -right-0.5 h-3 w-3 bg-green-500 border-2 border-white rounded-full" />
-                  )}
-                </div>
-                <div className="flex-1 text-left">
-                  <p className="font-medium text-gray-900">{user.name}</p>
-                  <p className="text-sm text-gray-500">
-                    {user.isOnline ? 'Online' : 'Offline'}
-                  </p>
-                </div>
-              </button>
-            ))
-          ) : (
-            <div className="text-center py-8 text-gray-500">
-              <p>No users found</p>
-            </div>
-          )}
-        </div>
-      </ScrollArea>
+      <UserScroll users={filteredUsers} onUserSelect={onUserSelect} />
     </div>
   );
 }

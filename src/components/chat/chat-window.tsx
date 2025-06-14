@@ -27,7 +27,7 @@ export function ChatWindow({ selectedUser, currentUser, conversationId }: ChatWi
   const [localMessages, setLocalMessages] = useState<Message[]>([]);
   const queryClient = useQueryClient();
 
-  console.log(conversationId)
+  // console.log(conversationId)
 
   // Fetch messages for the selected user
   const { data: messages = [], isLoading } = useQuery({

@@ -1,11 +1,11 @@
 import { NextRequest, NextResponse } from "next/server";
 import { pusherServer } from "@/lib/pusher";
-import getCurrentUser from "@/app/actions/getCurrentUser";
+import { getCurrentUser } from "@/app/actions/get-current-user";
 
-interface PusherAuthBody {
-	socket_id: string;
-	channel_name: string;
-}
+// interface PusherAuthBody {
+// 	socket_id: string;
+// 	channel_name: string;
+// }
 
 export async function POST(
 	req: NextRequest,

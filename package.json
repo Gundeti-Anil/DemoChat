@@ -53,6 +53,7 @@
     "sonner": "^2.0.3",
     "tailwind-merge": "^3.3.0",
     "zod": "^3.24.4",
+    "zsa": "^0.6.0",
     "zsa-react": "^0.2.3",
     "zustand": "^5.0.4"
   },

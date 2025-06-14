@@ -1,5 +1,5 @@
 import { db } from "@/lib/db";
-import getCurrentUser from "@/app/actions/getCurrentUser";
+import { getCurrentUser } from "@/app/actions/get-current-user";
 import { revalidateTag } from "next/cache";
 import { pusherServer } from "@/lib/pusher";
 

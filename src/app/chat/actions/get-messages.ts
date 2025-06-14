@@ -1,174 +1,77 @@
+'use server'
+
 import { db } from "@/lib/db";
 import { unstable_cache } from "next/cache";
+import { z } from "zod";
+import { createServerAction } from "zsa";
 
+// Define the input schema
+const getMessagesInput = z.object({
+  conversationId: z.string(),
+});
 
-export const getMessages = async (conversationId: string) => {
+export const getMessages = createServerAction()
+  .input(getMessagesInput)
+  .handler(async ({ input }) => {
+    const { conversationId } = input
 
-  if (!conversationId) return null;
+    try {
+      const messages = await db.message.findMany({
+        where: {
+          conversationId: conversationId
+        },
+        orderBy: {
+          createdAt: 'asc'
+        },
+        // include: {
+        //   sender: {
+        //     select: {
+        //       id: true,
+        //       name: true,
+        //       image: true
+        //     }
+        //   }
+        // }
+      })
 
-  const getCachedMessages = unstable_cache(
-    async () => {
-      try {
-        const messages = await db.message.findMany({
-          where: { conversationId },
-          orderBy: { createdAt: "desc" },
-        });
-        return messages;
-      } catch (error) {
-        // console.log(error);
-        // return null;
-        throw new Error(error as string);
-      }
-    },
-    [`messages-${conversationId}`],
-    {
-      tags: [`conversation-${conversationId}`, 'messages'],
-      revalidate: 300,
+      return messages
+    } catch (error) {
+      console.error('Failed to fetch messages:', error)
+      throw new Error('Failed to fetch messages')
     }
-  );
-
-  const cachedMessages = getCachedMessages();
-  if (!cachedMessages) {
-    return null
-  }
-  return cachedMessages
-};
-
-// const getMessages = unstable_cache(async (conversationId: string) => {
-//   try {
-//     const messages = await db.message.findMany({
-//         where: {
-//           conversationId: conversationId
-//         },
-//         orderBy: { createdAt: "asc" },
-//       });
-
-//     return messages;
-//   } catch (error) {
-//     console.log(error);
-//     return [];
-//   }
-// },   {
-//   tags: ['messages'],
-//   revalidate: 300, // 5 minutes
-// })
-
-// export default getMessages;
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-// const conversation = await db.conversation.findFirst({
-//     where: {
-//       users: {
-//         every: {
-//           id: {
-//             in: [currentUserId, userId]
-//           }
+  })
+
+// export const getMessages = createServerAction()
+//   .input(getMessagesInput)
+//   .handler(async ({ input }) => {
+//     if (!input.conversationId) return { data: null, error: "No conversation ID provided" };
+//     console.log(input.conversationId);
+//     const getCachedMessages = unstable_cache(
+//       async () => {
+//         console.log("in cache")
+//         try {
+//           const messages = await db.message.findMany({
+//             where: { conversationId: input.conversationId },
+//             orderBy: { createdAt: "desc" },
+//           });
+//           console.log(messages);
+//           return { data: messages, error: null };
+//         } catch (error) {
+//           return { data: null, error: error as Error };
 //         }
+//       },
+//       [`messages-${input.conversationId}`],
+//       {
+//         tags: [`conversation-${input.conversationId}`, 'messages'],
+//         revalidate: 300,
 //       }
-//     },
-//     include: {
-//       messages: {
-//         orderBy: { createdAt: "desc" },
-//         select: {
-//           id: true,
-//           body: true,
-//           image: true,
-//           createdAt: true,
-//           senderId: true,
-//           seen: {
-//             select: {
-//               id: true,
-//               name: true,
-//               image: true,
-//             }
-//           }
-//         }
-//       }
+//     );
+
+//     try {
+//       const result = await getCachedMessages();
+//       console.log(result);
+//       return result;
+//     } catch (error) {
+//       return { data: null, error: error as Error };
 //     }
-//   },
-// );
+//   });

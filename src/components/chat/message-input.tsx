@@ -5,13 +5,8 @@ import { Send, Paperclip, Image } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { cn } from '@/lib/utils';
+import { MessageInputProps } from '@/types/chat';
 
-interface MessageInputProps {
-  onSendMessage: (message: string) => void;
-  onFileUpload?: (file: File) => void;
-  disabled?: boolean;
-  placeholder?: string;
-}
 
 export function MessageInput({
   onSendMessage,
@@ -93,7 +88,7 @@ export function MessageInput({
             placeholder={placeholder}
             disabled={disabled}
             className={cn(
-              "min-h-[40px] max-h-[120px] resize-none pr-12 py-2",
+              "min-h-10 max-h-30 resize-none pr-12 py-2",
               "focus-visible:ring-1 focus-visible:ring-blue-500"
             )}
             rows={1}

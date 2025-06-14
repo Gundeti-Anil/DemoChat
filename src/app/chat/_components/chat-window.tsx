@@ -1,50 +1,52 @@
 'use client';
 
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { MoreHorizontal } from 'lucide-react';
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { useMutation } from '@tanstack/react-query';
 import { Button } from '@/components/ui/button';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { ScrollArea } from '@/components/ui/scroll-area';
-import { MessageBubble } from './message-bubble';
 import { MessageInput } from './message-input';
-import { Message, User } from '@/lib/types';
+import { Message } from '@/lib/types';
 import { pusher } from '@/lib/pusher';
 import axios from 'axios';
 import { MessageScroll } from './message-scroll';
 import { ChatWindowProps } from '@/types/chat';
+import { useSearchParams } from 'next/navigation';
 import { useServerAction } from "zsa-react";
 import { getMessages } from "@/app/chat/actions/get-messages";
-import { toast } from "sonner";
+import { toast } from "sonner"
 
 
-export function ChatWindow({ selectedUser, currentUser, conversationId }: ChatWindowProps) {
-  // const messagesEndRef = useRef<HTMLDivElement>(null);
-  // const scrollAreaRef = useRef<HTMLDivElement>(null);
-  // const [autoScroll, setAutoScroll] = useState(true);
+
+export function ChatWindow({ selectedUser, currentUser }: ChatWindowProps) {
+
   const [localMessages, setLocalMessages] = useState<Message[]>([]);
-  // const queryClient = useQueryClient();
 
+  const searchParams = useSearchParams();
+  const conversationId = searchParams.get('conversationId');
 
-  const { data: messages = [], isLoading } = useQuery({
-    queryKey: ['messages', selectedUser?.id],
-    queryFn: async () => {
-      if (!selectedUser?.id) return [];
-      const response = await axios.get(`/api/chat/messages?userId=${selectedUser.id}`);
-      // const response = await getMessages(conversationId);
-      if (!response.data) {
-        throw new Error('Failed to fetch messages');
-      }
-      const data = response.data;
-      setLocalMessages(data);
-      return data;
+  const {
+    execute,
+    // data: newMessages = [],
+    isPending: isLoading,
+    error: messagesError
+  } = useServerAction(getMessages, {
+    onSuccess: (data) => {
+      if (!data) return;
+      setLocalMessages(data.data as Message[])
     },
-    enabled: !!selectedUser?.id,
-    // staleTime: Infinity,
+    onError: () => {
+      toast(messagesError?.message)
+    }
+  })
 
-  });
+  useEffect(() => {
+    if (conversationId) {
+      execute({ conversationId: conversationId! })
+    }
+  }, [conversationId, execute])
 
-  // Send message mutation
+
   const sendMessageMutation = useMutation({
     mutationFn: async (messageBody: string) => {
       if (!selectedUser?.id) return;
@@ -64,37 +66,11 @@ export function ChatWindow({ selectedUser, currentUser, conversationId }: ChatWi
       // queryClient.invalidateQueries({ queryKey: ['messages', selectedUser?.id] });
     },
     onError: (error) => {
-      // toast({
-      //   title: 'Error',
-      //   description: error.message,
-      //   variant: 'destructive',
-      // });
+      toast(error.message)
     },
   });
 
-  // Auto-scroll to bottom
-  // const scrollToBottom = () => {
-  //   messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
-  // };
 
-  // Handle auto-scroll
-  // useEffect(() => {
-  //   if (autoScroll) {
-  //     scrollToBottom();
-  //   }
-  // }, [messages, autoScroll]);
-
-  // useEffect(() => {
-  //   scrollToBottom();
-  // }, [messages]);
-
-
-  // Handle scroll events to determine if user is at bottom
-  // const handleScroll = (e: React.UIEvent<HTMLDivElement>) => {
-  //   const { scrollTop, scrollHeight, clientHeight } = e.currentTarget;
-  //   const isAtBottom = scrollHeight - scrollTop <= clientHeight + 50;
-  //   setAutoScroll(isAtBottom);
-  // };
 
   const handleSendMessage = (messageBody: string) => {
     if (!selectedUser?.id) return;
@@ -108,6 +84,7 @@ export function ChatWindow({ selectedUser, currentUser, conversationId }: ChatWi
   useEffect(() => {
 
     if (!conversationId || !currentUser?.id) return;
+
 
     const channelName = `private-chat-${conversationId}`;
     const channel = pusher.subscribe(channelName);
@@ -185,35 +162,6 @@ export function ChatWindow({ selectedUser, currentUser, conversationId }: ChatWi
         isLoading={isLoading}
         currentUser={currentUser!}
       />
-      {/* <ScrollArea
-        className="flex-1 p-4"
-        onScrollCapture={handleScroll}
-        ref={scrollAreaRef}
-      >
-        <div className="space-y-4">
-          {isLoading ? (
-            <div className="flex items-center justify-center py-8">
-              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500" />
-            </div>
-          ) : localMessages.length === 0 ? (
-            <div className="text-center py-8 text-gray-500">
-              <p>No messages yet</p>
-              <p className="text-sm">Start the conversation!</p>
-            </div>
-          ) : (
-            localMessages.map((message: Message) => (
-              <MessageBubble
-                key={message.id}
-                message={message}
-                currentUser={currentUser}
-                showAvatar={true}
-              />
-            ))
-          )}
-          <div ref={messagesEndRef} />
-        </div>
-      </ScrollArea> */}
-
       {/* Message Input */}
       <MessageInput
         onSendMessage={handleSendMessage}
@@ -224,3 +172,71 @@ export function ChatWindow({ selectedUser, currentUser, conversationId }: ChatWi
     </div>
   );
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+// const { data: messages = [], isLoading } = useQuery({
+//   queryKey: ['messages', selectedUser?.id],
+//   queryFn: async () => {
+//     if (!selectedUser?.id) return [];
+//     const response = await axios.get(`/api/chat/messages?userId=${selectedUser.id}`);
+//     // const response = await getMessages(conversationId);
+//     if (!response.data) {
+//       throw new Error('Failed to fetch messages');
+//     }
+//     const data = response.data;
+//     setLocalMessages(data);
+//     return data;
+//   },
+//   enabled: !!selectedUser?.id,
+// });
+
+// const {
+//   execute: fetchMessages,
+//   isPending: isMessagesLoading,
+//   error: messagesError
+// } = useServerAction(getMessages, {
+//   onSuccess: (result) => {
+//     console.log("✅ fetchMessages success:", result);
+//   },
+//   onError: (error) => {
+//     console.log("❌ fetchMessages error:", error);
+//   }
+// });

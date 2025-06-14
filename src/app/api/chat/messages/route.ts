@@ -1,46 +1,46 @@
 import { NextRequest, NextResponse } from "next/server";
 import { db } from "@/lib/db";
 import { pusherServer } from "@/lib/pusher";
-import getCurrentUser from "@/app/actions/getCurrentUser";
-import { getMessages } from "@/app/chat/actions/get-messages";
+import { getCurrentUser } from "@/app/actions/get-current-user";
+// import { getMessages } from "@/app/chat/actions/get-messages";
 import { getConversationByUserId } from "@/app/chat/actions/get-conversation-by-userId";
 import { revalidateTag } from "next/cache";
 
-export async function GET(req: NextRequest) {
-  const currentUser = await getCurrentUser();
+// export async function GET(req: NextRequest) {
+//   const currentUser = await getCurrentUser();
 
-  if (!currentUser?.email) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-  }
+//   if (!currentUser?.email) {
+//     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+//   }
   
 
-  if (!currentUser || currentUser.role !== "MENTEE") {
-    return NextResponse.json({ error: "Forbidden" }, { status: 403 });
-  }
+//   if (!currentUser || currentUser.role !== "MENTEE") {
+//     return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+//   }
 
-  const { searchParams } = new URL(req.url);
-  const targetUserId = searchParams.get("userId");
+//   const { searchParams } = new URL(req.url);
+//   const targetUserId = searchParams.get("userId");
 
-  if (!targetUserId) {
-    return NextResponse.json({ error: "Missing userId" }, { status: 400 });
-  }
+//   if (!targetUserId) {
+//     return NextResponse.json({ error: "Missing userId" }, { status: 400 });
+//   }
 
-  const conversation = await getConversationByUserId(currentUser.id, parseInt(targetUserId));
+//   const conversation = await getConversationByUserId(currentUser.id, parseInt(targetUserId));
 
-  if (!conversation) {
-    return NextResponse.json({ error: "Conversation not found" }, { status: 404 });
-  }
+//   if (!conversation) {
+//     return NextResponse.json({ error: "Conversation not found" }, { status: 404 });
+//   }
 
-  const messages = await getMessages(conversation?.id as string);
+//   // const messages = await getMessages(conversation?.id as string);
   
-  if (!messages) {
-    return NextResponse.json({ error: "Conversation not found" }, { status: 404 });
-  }
+//   // if (!messages) {
+//   //   return NextResponse.json({ error: "Conversation not found" }, { status: 404 });
+//   // }
   
-  return NextResponse.json(messages);
+//   return NextResponse.json({});
 
 
-}
+// }
 
 
 
@@ -55,31 +55,10 @@ export async function POST(req: NextRequest) {
     if (!currentUser || currentUser.role !== "MENTEE") {
       return NextResponse.json({ error: "Forbidden" }, { status: 403 });
     }
-       
-    // const { body, image , conversationId } = await req.json();
-
-    // if (image) {
-    //   const imageResponse = await cloudinary.uploader.upload(image);
-    //   message = imageResponse.secure_url;
-    // }
-    // const conversation = await db.conversation.findUnique({
-    //   where: {
-    //     id: conversationId,
-    //     // users: {
-    //     //   some: {
-    //     //     id: parseInt(currentUser.id),
-    //     //   },
-    //     // },
-    //   },
-    //   include: {
-    //     users: true,
-    //   },
-    // });
 
     const { body, image , userId } = await req.json();
 
     const conversation = await getConversationByUserId(currentUser.id, parseInt(userId));
-
 
 
     if (!conversation) {
@@ -88,11 +67,7 @@ export async function POST(req: NextRequest) {
         { status: 404 }
       );
     }
-    // const isUserInConversation = conversation?.users.some(user => user.id === currentUser.id);
-    // if (!isUserInConversation) {
-    //   return new NextResponse("Unauthorized", { status: 403 });
-    // }
-
+    
     const newMessage = await db.message.create({
       data: {
         body: body,

@@ -16,5 +16,16 @@ export interface MessageBubbleProps {
 export interface ChatWindowProps {
     selectedUser: User | null;
     currentUser: User | null;
-    conversationId: string | null;
+    // conversationId: string | null;
+}
+
+export interface SidebarProps {
+    onUserSelect: (user: User) => void;
+}
+
+export interface MessageInputProps {
+    onSendMessage: (message: string) => void;
+    onFileUpload?: (file: File) => void;
+    disabled?: boolean;
+    placeholder?: string;
 }

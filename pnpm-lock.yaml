@@ -137,6 +137,9 @@ importers:
       zod:
         specifier: ^3.24.4
         version: 3.24.4
+      zsa:
+        specifier: ^0.6.0
+        version: 0.6.0(zod@3.24.4)
       zsa-react:
         specifier: ^0.2.3
         version: 0.2.3(react@19.1.0)(zod@3.24.4)
