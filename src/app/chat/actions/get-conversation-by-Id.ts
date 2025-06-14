@@ -1,7 +1,7 @@
 import { db } from "@/lib/db";
-import getCurrentUser from "./getCurrentUser";
+import getCurrentUser from "../../actions/getCurrentUser";
 
-const getConversationById = async (conversationId: string) => {
+export const getConversationById = async (conversationId: string) => {
   try {
     const currentUser = await getCurrentUser();
 
@@ -15,11 +15,11 @@ const getConversationById = async (conversationId: string) => {
       },
       include: {
         users: {
-            select: {
-                id: true,
-                name: true,
-                image: true,
-            }
+          select: {
+            id: true,
+            name: true,
+            image: true,
+          }
         },
       },
     });
@@ -30,9 +30,8 @@ const getConversationById = async (conversationId: string) => {
 
     return conversation;
   } catch (error) {
-    console.log(error);
-    return null;
+    // console.log(error);
+    // return null;
+    throw new Error(error as string);
   }
 };
-
-export default getConversationById;

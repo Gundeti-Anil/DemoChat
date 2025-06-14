@@ -3,7 +3,7 @@ import { authOptions } from "@/lib/auth";
 import { db } from "@/lib/db";
 import { NextResponse } from "next/server";
 import { getCurrentUser } from "@/utils/auth";
-import getUsers from "@/app/actions/getUsers";
+import { getUsers } from "@/app/actions/get-users";
 
 export async function GET() {
   // const session = await getServerSession(authOptions);

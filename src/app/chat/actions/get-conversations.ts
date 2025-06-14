@@ -1,11 +1,11 @@
 import { db } from "@/lib/db";
-import getCurrentUser from "./getCurrentUser";
+import getCurrentUser from "../../actions/getCurrentUser";
 
-const getConversations = async () => {
+export const getConversations = async () => {
   const currentUser = await getCurrentUser();
 
   if (!currentUser?.id || !currentUser?.email) {
-    return [];
+    return null;
   }
 
   try {
@@ -45,9 +45,8 @@ const getConversations = async () => {
 
     return conversations;
   } catch (error) {
-    console.log("[CONVERSATIONS_ERROR]", error);
-    return [];
+    // console.log("[CONVERSATIONS_ERROR]", error);
+    // return null;
+    throw new Error(error as string);
   }
 };
-
-export default getConversations;

@@ -20,8 +20,7 @@ const getCurrentUser = async () => {
         image: true,
         role: true,
       },
-    }
-    );
+    });
 
     if (!currentUser) {
       return null;
@@ -29,7 +28,7 @@ const getCurrentUser = async () => {
 
     return currentUser;
   } catch (error) {
-    console.log(error);
+    // throw new Error(error as string);
     return null;
   }
 };

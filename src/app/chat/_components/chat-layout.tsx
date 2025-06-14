@@ -20,14 +20,13 @@ import axios from 'axios';
 //   },
 // });
 
-const queryClient = new QueryClient();
+const queryClient = new QueryClient()
+function ChatContent({ currentUser, users }: { currentUser: User, users: User[] }) {
 
-function ChatContent({ currentUser }: { currentUser: User }) {
 
-  const router = useRouter();
   const [selectedUser, setSelectedUser] = useState<User | null>(null);
-  const [conversationId, setConversationId] = useState<string | null>(null);
-
+  const [conversationId, setConversationId] = useState<string>("");
+  const router = useRouter();
   const { mutate: createOrGetConversation, isPending } = useMutation({
     mutationFn: async (userId: string) => {
       const response = await axios.post('/api/conversation', JSON.stringify({ userId }), {
@@ -40,6 +39,8 @@ function ChatContent({ currentUser }: { currentUser: User }) {
         throw new Error('Failed to create/fetch conversation');
       }
       const data = response.data;
+
+
       return data;
     },
     onSuccess: (data) => {
@@ -54,7 +55,9 @@ function ChatContent({ currentUser }: { currentUser: User }) {
   });
 
 
-
+  if (isPending) {
+    return <div>Loading...</div>
+  }
   return (
     <div className="h-screen flex bg-gray-50">
       <Sidebar
@@ -62,6 +65,7 @@ function ChatContent({ currentUser }: { currentUser: User }) {
           setSelectedUser(user);
           createOrGetConversation(user.id.toString());
         }}
+        users={users}
       />
       <ChatWindow
         selectedUser={selectedUser}
@@ -73,10 +77,10 @@ function ChatContent({ currentUser }: { currentUser: User }) {
   );
 }
 
-export function ChatLayout({ currentUser }: { currentUser: User }) {
+export function ChatLayout({ currentUser, users }: { currentUser: User, users: User[] }) {
   return (
     <QueryClientProvider client={queryClient}>
-      <ChatContent currentUser={currentUser} />
+      <ChatContent currentUser={currentUser} users={users} />
     </QueryClientProvider>
   );
 }

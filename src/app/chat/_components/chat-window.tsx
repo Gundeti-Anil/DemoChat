@@ -10,43 +10,38 @@ import { MessageBubble } from './message-bubble';
 import { MessageInput } from './message-input';
 import { Message, User } from '@/lib/types';
 import { pusher } from '@/lib/pusher';
-import { useParams } from 'next/navigation';
 import axios from 'axios';
+import { MessageScroll } from './message-scroll';
+import { ChatWindowProps } from '@/types/chat';
+import { useServerAction } from "zsa-react";
+import { getMessages } from "@/app/chat/actions/get-messages";
+import { toast } from "sonner";
 
-
-interface ChatWindowProps {
-  selectedUser: User | null;
-  currentUser: User | null;
-  conversationId: string | null;
-}
 
 export function ChatWindow({ selectedUser, currentUser, conversationId }: ChatWindowProps) {
-  const messagesEndRef = useRef<HTMLDivElement>(null);
-  const scrollAreaRef = useRef<HTMLDivElement>(null);
-  const [autoScroll, setAutoScroll] = useState(true);
+  // const messagesEndRef = useRef<HTMLDivElement>(null);
+  // const scrollAreaRef = useRef<HTMLDivElement>(null);
+  // const [autoScroll, setAutoScroll] = useState(true);
   const [localMessages, setLocalMessages] = useState<Message[]>([]);
-  const queryClient = useQueryClient();
+  // const queryClient = useQueryClient();
 
-  console.log(conversationId)
 
-  // Fetch messages for the selected user
   const { data: messages = [], isLoading } = useQuery({
     queryKey: ['messages', selectedUser?.id],
     queryFn: async () => {
       if (!selectedUser?.id) return [];
       const response = await axios.get(`/api/chat/messages?userId=${selectedUser.id}`);
+      // const response = await getMessages(conversationId);
       if (!response.data) {
         throw new Error('Failed to fetch messages');
       }
-      const data = await response.data;
+      const data = response.data;
       setLocalMessages(data);
       return data;
     },
     enabled: !!selectedUser?.id,
-    // staleTime: Infinity,       // Data will never be considered stale
-    // // refetchOnWindowFocus: false, // Won't refetch when window regains focus   // Won't refetch when component remounts
-    // // refetchOnReconnect: false, // Won't refetch on network reconnect
-    // // retry: false,
+    // staleTime: Infinity,
+
   });
 
   // Send message mutation
@@ -54,22 +49,16 @@ export function ChatWindow({ selectedUser, currentUser, conversationId }: ChatWi
     mutationFn: async (messageBody: string) => {
       if (!selectedUser?.id) return;
 
-      const response = await fetch('/api/chat/messages', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          body: messageBody,
-          userId: selectedUser.id,
-          image: null,
-        }),
+      const response = await axios.post('/api/chat/messages', {
+        body: messageBody,
+        userId: selectedUser.id,
+        image: null,
       });
 
-      if (!response.ok) {
+      if (!response.data) {
         throw new Error('Failed to send message');
       }
-      return response.json();
+      return response.data;
     },
     onSuccess: () => {
       // queryClient.invalidateQueries({ queryKey: ['messages', selectedUser?.id] });
@@ -84,23 +73,28 @@ export function ChatWindow({ selectedUser, currentUser, conversationId }: ChatWi
   });
 
   // Auto-scroll to bottom
-  const scrollToBottom = () => {
-    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
-  };
+  // const scrollToBottom = () => {
+  //   messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+  // };
 
   // Handle auto-scroll
-  useEffect(() => {
-    if (autoScroll) {
-      scrollToBottom();
-    }
-  }, [messages, autoScroll]);
+  // useEffect(() => {
+  //   if (autoScroll) {
+  //     scrollToBottom();
+  //   }
+  // }, [messages, autoScroll]);
+
+  // useEffect(() => {
+  //   scrollToBottom();
+  // }, [messages]);
+
 
   // Handle scroll events to determine if user is at bottom
-  const handleScroll = (e: React.UIEvent<HTMLDivElement>) => {
-    const { scrollTop, scrollHeight, clientHeight } = e.currentTarget;
-    const isAtBottom = scrollHeight - scrollTop <= clientHeight + 50;
-    setAutoScroll(isAtBottom);
-  };
+  // const handleScroll = (e: React.UIEvent<HTMLDivElement>) => {
+  //   const { scrollTop, scrollHeight, clientHeight } = e.currentTarget;
+  //   const isAtBottom = scrollHeight - scrollTop <= clientHeight + 50;
+  //   setAutoScroll(isAtBottom);
+  // };
 
   const handleSendMessage = (messageBody: string) => {
     if (!selectedUser?.id) return;
@@ -112,23 +106,16 @@ export function ChatWindow({ selectedUser, currentUser, conversationId }: ChatWi
   };
 
   useEffect(() => {
-    console.log("useEffect")
+
     if (!conversationId || !currentUser?.id) return;
 
-
     const channelName = `private-chat-${conversationId}`;
-    console.log(channelName);
     const channel = pusher.subscribe(channelName);
 
     // Handle new message event
     channel.bind('Message:new', (newMessage: Message) => {
       setLocalMessages((prevMessages: Message[]) => [...prevMessages, newMessage]);
 
-      if (autoScroll) {
-        setTimeout(() => {
-          scrollToBottom();
-        }, 100);
-      }
     });
     // Clean up subscription
     return () => {
@@ -193,7 +180,12 @@ export function ChatWindow({ selectedUser, currentUser, conversationId }: ChatWi
       </div>
 
       {/* Messages */}
-      <ScrollArea
+      <MessageScroll
+        localMessages={localMessages}
+        isLoading={isLoading}
+        currentUser={currentUser!}
+      />
+      {/* <ScrollArea
         className="flex-1 p-4"
         onScrollCapture={handleScroll}
         ref={scrollAreaRef}
@@ -203,7 +195,7 @@ export function ChatWindow({ selectedUser, currentUser, conversationId }: ChatWi
             <div className="flex items-center justify-center py-8">
               <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500" />
             </div>
-          ) : messages.length === 0 ? (
+          ) : localMessages.length === 0 ? (
             <div className="text-center py-8 text-gray-500">
               <p>No messages yet</p>
               <p className="text-sm">Start the conversation!</p>
@@ -220,7 +212,7 @@ export function ChatWindow({ selectedUser, currentUser, conversationId }: ChatWi
           )}
           <div ref={messagesEndRef} />
         </div>
-      </ScrollArea>
+      </ScrollArea> */}
 
       {/* Message Input */}
       <MessageInput

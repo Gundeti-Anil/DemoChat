@@ -2,8 +2,8 @@ import { NextRequest, NextResponse } from "next/server";
 import { db } from "@/lib/db";
 import { pusherServer } from "@/lib/pusher";
 import getCurrentUser from "@/app/actions/getCurrentUser";
-import getMessages from "@/app/actions/getMessages";
-import getConversationByUserId from "@/app/actions/getConversationByUserId";
+import { getMessages } from "@/app/chat/actions/get-messages";
+import { getConversationByUserId } from "@/app/chat/actions/get-conversation-by-userId";
 import { revalidateTag } from "next/cache";
 
 export async function GET(req: NextRequest) {
@@ -131,7 +131,7 @@ export async function POST(req: NextRequest) {
     
 
     await pusherServer.trigger(`private-chat-${conversation.id}`, "Message:new", newMessage);
-    console.log(`private-chat-${conversation.id}`);
+    // console.log(`private-chat-${conversation.id}`);
     revalidateTag(`conversation-${conversation.id}`);
 
     await db.conversation.update({

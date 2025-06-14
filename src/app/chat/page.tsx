@@ -1,9 +1,11 @@
-import { ChatLayout } from "@/components/chat/chat-layout"
+import { ChatLayout } from "./_components/chat-layout"
 import getCurrentUser from "@/app/actions/getCurrentUser"
 import { redirect } from "next/navigation";
+import { getUsers } from "./actions/get-users";
 // 
 export default async function ChatPage() {
   try {
+    const users = await getUsers();
     const currentUser = await getCurrentUser();
     if (!currentUser) {
       redirect('/auth/signin'); // or any other route
@@ -11,7 +13,7 @@ export default async function ChatPage() {
     return (
       <div className="h-screen bg-background">
         {/* @ts-ignore */}
-        <ChatLayout currentUser={currentUser} />
+        <ChatLayout currentUser={currentUser} users={users} />
       </div>
     );
   } catch (error) {
